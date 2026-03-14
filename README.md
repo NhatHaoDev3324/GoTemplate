@@ -35,6 +35,31 @@ Dự án được phân chia theo từng Module chức năng, giúp tách biệt
 
 ---
 
+## 🖼️ Sơ Đồ Hệ Thống (System Architecture)
+
+Dưới đây là luồng xử lý dữ liệu chuẩn của hệ thống:
+
+```mermaid
+graph TD
+    Client[Client / Frontend] -->|HTTP Request| Router[Central Router]
+    Router --> Middleware{Middleware Layer}
+    Middleware -->|CORS, Auth, Logger| Handler[Module Handler]
+    Handler -->|Validate DTO| Service[Module Service]
+    Service -->|Business Logic| Repository[Module Repository]
+    
+    subgraph Data Layer
+        Repository -->|1. Check Cache| Redis[(Redis Cache)]
+        Repository -->|2. Query/Store| DB[(PostgreSQL)]
+        DB -.->|3. Update Cache| Redis
+    end
+    
+    Repository -->|Result| Service
+    Service -->|Data| Handler
+    Handler -->|JSON Response| Client
+```
+
+---
+
 ## ⚡ Cơ Chế Hoạt Động Của Redis (Performance Optimization)
 
 Hệ thống áp dụng chiến lược **Cache-Aside Pattern** để đạt tốc độ đọc dữ liệu tức thì (Micro-seconds).
@@ -114,6 +139,21 @@ docker-compose logs -f app
 1. **Interface Driven:** Các lớp Service và Repository giao tiếp qua Interface để dễ dàng viết Mock Test.
 2. **One-Way Dependency:** Module ngoài không được phép can thiệp trực tiếp vào logic nội bộ của module khác.
 3. **Consistency:** Mọi thay đổi dữ liệu phải đảm bảo làm mới Cache Redis.
+
+---
+
+## ⚖️ Ưu và Nhược Điểm (Pros & Cons)
+
+### ✅ Ưu điểm (Pros)
+- **Hiệu năng vượt trội:** Nhờ Redis Cache, tốc độ truy xuất dữ liệu giảm từ hàng chục ms xuống còn < 1ms.
+- **Tính đóng gói (Encapsulation):** Cấu trúc Modular giúp bạn dễ dàng thêm/sửa tính năng mà không làm ảnh hưởng đến các phần khác.
+- **Dễ Unit Test:** Sử dụng Interface cho phép Mock dữ liệu cực kỳ đơn giản.
+- **Sẵn sàng triển khai:** Tích hợp sẵn Docker-Compose giúp setup môi trường nhanh chóng và nhất quán.
+- **Clean Code:** Tuân thủ các nguyên lý thiết kế giúp mã nguồn rõ ràng, dễ đọc cho cả người mới.
+
+### ❌ Nhược điểm (Cons)
+- **Boilerplate:** Cấu trúc nhiều lớp có thể hơi rườm rà đối với các project cực nhỏ hoặc script đơn giản.
+- **Độ dốc học tập:** Yêu cầu lập trình viên hiểu biết về Interface, Dependency Injection và nguyên lý Clean Architecture.
 
 ---
 
