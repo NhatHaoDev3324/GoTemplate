@@ -18,9 +18,7 @@ func NewRouter(db *gorm.DB, rdb *redis.Client) *gin.Engine {
 
 	r.LoadHTMLGlob("templates/*")
 
-	r.GET("/", func(c *gin.Context) {
-		c.HTML(200, "index.html", nil)
-	})
+	r.GET("/", RootHandler)
 
 	api := r.Group("/api/v1")
 	{
